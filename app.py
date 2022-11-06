@@ -126,7 +126,7 @@ footer = dac.Footer(
 )
 
 # =============================================================================
-# App loading layout
+# App layout
 # =============================================================================
 app.layout = dac.Page([navbar, sidebar, body, controlbar, footer])
 
