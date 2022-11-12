@@ -1,30 +1,45 @@
-# IMPORTS
-import dash
-from dash import dcc, html
+# =============================================================================
+# Import libraries
+# =============================================================================
+import dash 
+import dash_core_components as dcc
 import dash_bootstrap_components as dbc
+import dash_html_components as html
+from dash.dependencies import Input, Output
 
 
 # =============================================================================
-# Dash App and Flask Server
+# Instantiate  Dash App and Flask Server 
 # =============================================================================
 app = dash.Dash(__name__, use_pages=True, external_stylesheets=[dbc.themes.DARKLY])
-server = app.server 
+server = app.server
 
 # =============================================================================
-# LAYOUT
+# Layout components
+# =============================================================================
+# =============================================================================
+# Navbar
+# =============================================================================
+navbar = dbc.NavbarSimple(
+    dbc.DropdownMenu(
+        [
+            dbc.DropdownMenuItem('Contact us', href=dash.page_registry['pages.contact']['path']),
+            dbc.DropdownMenuItem('User account', href=dash.page_registry['pages.user_account']['path'])
+    ],
+    nav=True,
+    label='Config',
+    ),
+    brand='',
+    color='dark',
+    dark=True,
+    class_name='mb-2',
+)
+
 # =============================================================================
 # Sidebar
-# TODO: create side bar component with different options: Company Financials (Tesla, Square), Collectibles, About Us, Contact
-
-CONTENT_STYLE = {
-    "margin-left": "18rem",
-    "margin-right": "2rem",
-    "padding": "2rem 1rem",
-}
-
+# =============================================================================
 PLOTLY_LOGO = "https://images.plot.ly/logo/new-branding/plotly-logomark.png"
-
-sidebar = html.Div(
+sidebar = sidebar = html.Div(
     [
         html.Div([
                 # width: 3rem ensures the logo is the exact width of the
@@ -114,34 +129,50 @@ sidebar = html.Div(
     className="sidebar",
 )
 
-
-#Navbar
-# TODO: create upper bar with ring bell icon and a title
-navbar = []
-
+# =============================================================================
 # Body
-# TODO: it contains the different clickable pages that compose the web app
+# =============================================================================
+CONTENT_STYLE = {
+    "margin-left": "18rem",
+    "margin-right": "2rem",
+    "padding": "2rem 1rem",
+}
 body = html.Div(id="page-content", style=CONTENT_STYLE)
 
+# =============================================================================
 # Footer
-# TODO: bottom bar with company name, link to webpage and date
-footer = []
+# =============================================================================
+footer_left = html.A("@tmts_media, TMTS Media",
+		href = "https://twitter.com/tmts_media", 
+		target = "_blank")
 
-# Container for app layout
-app.layout = dbc.Container([sidebar, body, dash.page_container], fluid=True)
+footer_right = html.P("2022")
 
 
+footer = html.Footer(
+    [
+    dbc.Col(footer_left, width=10),
+    dbc.Col(footer_right, width=2),
+    ]
+)
 
 
 
 # =============================================================================
-# CALLBACKS
+# Layout 
 # =============================================================================
+#app.layout = dbc.Container([
+ #   dbc.Row([navbar]),
+  #  dbc.Row([
+   #     dbc.Col([sidebar]),
+    #    dbc.Col([body, dash.page_container])
+    #]),
+   # footer,
+#], fluid = True)
 
-
-
+app.layout = dbc.Container([navbar, sidebar, footer, dash.page_container], fluid=True)
 # =============================================================================
-# MAIN
+# Main 
 # =============================================================================
-if __name__ == '__main__':
-    app.run_server(debug=False, port=8000)
+if __name__ == "__main__":
+    app.run_server(debug=True, port=3000)
