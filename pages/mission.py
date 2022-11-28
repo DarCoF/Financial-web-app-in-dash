@@ -1,3 +1,4 @@
+from pydoc import classname
 import dash
 from dash import dcc, html
 import dash_bootstrap_components as dbc
@@ -12,9 +13,27 @@ dash.register_page(__name__,
                    description='Brief description of TMTS mission'
 )
 
-layout = dbc.Container(
+CONTENT_FONT_SIZE = 30
+TITLE_FONT_SIZE = 14
+
+def get_card(img_url, title, content):
+    card = dbc.Card([
+        dbc.CardHeader([
+            html.Img(src=img_url),
+            html.P(title, style={'color': 'white', 'fontSize': CONTENT_FONT_SIZE})
+        ]),
+        html.Hr(),
+        dbc.CardBody([html.P(content, style={'color': 'white', 'fontSize': TITLE_FONT_SIZE})])
+    ], className='card')
+    return card
+
+layout = html.Div(
     [
-        dcc.Graph(id='test_scatter',
-                  figure= plot_scatter())
-    ]
+        dbc.Row([
+            dbc.Col([get_card('', 'Tipo Mofa', 'Su biografía')],  width= 6, class_name= 'mb-2'),
+            dbc.Col([get_card('', 'Tipo Serio', 'Su biografía')],  width= 6),
+            dbc.Col([get_card('', 'Nuestra pequeña historia', 'Aquí va el contenido')], width= 6),
+            dbc.Col([get_card('', '¿Qué es "El Oráculo"?', 'Aquí va el contenido')],  width= 6)
+        ])
+    ], className= 'center-screen'
 )

@@ -1,3 +1,91 @@
+/* FONTS */
+@font-face {
+  font-family: Brand;
+  src:url("fonts/ShareTechMono-Regular.ttf")format("truetype");
+  }
+
+@font-face {
+  font-family: SmallTitles;
+  src:url("fonts/WaitingfortheSunrise-Regular.ttf")format("truetype");
+}
+
+
+/* Applying custom fonts to components html.H2, html.P and html.Span*/
+h2, p, a {
+  font-family: Brand, sans-serif;
+  /*font-weight: 400;
+  font-style: normal;*/
+  color:rgb(228, 228, 228);
+  }  
+span {
+  font-family: SmallTitles;
+  color:rgb(228, 228, 228);
+}
+
+/* Position component to screen/web page */
+.center-screen {
+  display: flex;
+  margin-top: 50px;
+  margin-bottom: 50px;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  min-height: 60vh;
+}
+
+.center-screen-tabs {
+  display: flex;
+  margin-top: 50px;
+  margin-bottom: 50px;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  min-height: 0vh;
+}
+
+.centered {
+  margin:auto;
+}
+
+/* Card style */
+.card {
+  opacity:1;
+  background-image: url("");
+  background-color: #222222;
+  width:auto;
+  height: auto;
+  text-align: center;
+}
+
+/* Image position*/
+.image {
+  width: 300px;
+  height: 300px;
+  object-fit: cover;
+  object-position: 50% 50%;
+ }
+
+/* Background style */
+.overlay{
+  opacity:0.95;
+  background-image: url("OTR-Youtube-Banner_v0.0.png");
+  background-repeat: repeat-x;
+  position:relative;
+  width:100%;
+  height:100%;
+  top:0px;
+  left:50px;
+  z-index:1000;
+}
+
+.overlay-two {
+  background: url(OTR-Youtube-Banner_v0.0.png) no-repeat center center fixed; 
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+}
+
 /* This creates a skinny side bar fixed to the left of the page */
 .sidebar {
     position: fixed;
@@ -6,14 +94,14 @@
     bottom: 0;
     width: 5rem;
     padding: 2rem 1rem;
-    background-color: #292c2e;
+    background-color: #191a19;
     z-index: 1050;
     transition: width 0.1s ease-in-out;
   }
   
   /* when the user hovers on the sidebar, expand it */
   .sidebar:hover {
-    width: 16rem;
+    width: 14rem;
   }
   
   /* make sure the contents of the navlink don't wrap when navbar collapses */
@@ -71,3 +159,46 @@
     margin-right: 2rem;
     padding: 2rem 1rem;
   }
+
+/* Navbar config item and subitems font*/
+.button-dropdown {
+  font-size: 1rem !important;
+  font-family: SmallTitles;
+  /*width:380px*/
+}
+
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3rem;
+  background-color: #191a19;
+}
+
+
+/* Body style*/
+.body {
+  position: fixed;
+  left: 15;
+  margin-top: 4rem;
+  margin-left: 5rem;
+  padding: 3rem 1rem;
+  background-color: #585f58;
+}
+
+/* Footer style*/
+.footer{
+  position: fixed;
+  bottom:0;
+  background-color: #191a19;
+  height: 3rem;
+  margin-top: 0rem;
+  clear: both;
+  font-size: 1.2rem !important;
+  font-family: SmallTitles;
+  color:rgb(228, 228, 228);
+}
+
+
+

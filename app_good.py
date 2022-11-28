@@ -1,17 +1,18 @@
 # =============================================================================
 # Import libraries
 # =============================================================================
-import dash 
-import dash_core_components as dcc
+from enum import auto
+from turtle import width
+import dash
 import dash_bootstrap_components as dbc
-import dash_html_components as html
+from dash import html, dcc
 from dash.dependencies import Input, Output
 
 
 # =============================================================================
 # Instantiate  Dash App and Flask Server 
 # =============================================================================
-app = dash.Dash(__name__, use_pages=True, external_stylesheets=[dbc.themes.DARKLY])
+app = dash.Dash(__name__, use_pages=True, external_stylesheets=[dbc.themes.DARKLY, dbc.icons.FONT_AWESOME])
 server = app.server
 
 # =============================================================================
@@ -21,30 +22,33 @@ server = app.server
 # Navbar
 # =============================================================================
 navbar = dbc.NavbarSimple(
-    dbc.DropdownMenu(
-        [
-            dbc.DropdownMenuItem('Contact us', href=dash.page_registry['pages.contact']['path']),
-            dbc.DropdownMenuItem('User account', href=dash.page_registry['pages.user_account']['path'])
+    children=[
+        dbc.DropdownMenu(
+            children=[
+                dbc.DropdownMenuItem(dash.page_registry['pages.user_account']['name'], href=dash.page_registry['pages.user_account']['path']),
+                dbc.DropdownMenuItem(dash.page_registry['pages.report_bug']['name'], href=dash.page_registry['pages.report_bug']['path'])
+            ],
+            nav=True,
+            in_navbar=True,
+            label="Config",
+        ),
     ],
-    nav=True,
-    label='Config',
-    ),
-    brand='',
-    color='dark',
+    brand="",
+    brand_href="#",
+    color="navbar",
     dark=True,
-    class_name='mb-2',
+    class_name='navbar rounded',
 )
 
 # =============================================================================
 # Sidebar
 # =============================================================================
-PLOTLY_LOGO = "https://images.plot.ly/logo/new-branding/plotly-logomark.png"
 sidebar = sidebar = html.Div(
     [
         html.Div([
                 # width: 3rem ensures the logo is the exact width of the
                 # collapsed sidebar (accounting for padding)
-                html.Img(src=PLOTLY_LOGO, style={"width": "3rem"}),
+                html.Img(src="assets\EggLogo_white_transparency.png", style={"width": "3rem"}),
                 html.H2("TMTS", className="display-4"),
             ], 
             className= 'sidebar-header',
@@ -59,14 +63,14 @@ sidebar = sidebar = html.Div(
         [
             dbc.NavLink(
                     [
-                        html.I(className="fas fa-home me-2"), html.Span("Test 1"),
+                        html.I(className="fas fa-home me-2"), html.Span(dash.page_registry['pages.tesla']['name']),
                     ],
                     href="/",
                     active="exact",
                 ),
             dbc.NavLink(
                     [
-                        html.I(className="fas fa-home me-2"), html.Span("Test 2"),
+                        html.I(className="fas fa-home me-2"), html.Span(dash.page_registry['pages.base_company']['name']),
                     ],
                     href="/test_two",
                     active="exact",
@@ -84,14 +88,14 @@ sidebar = sidebar = html.Div(
         [
             dbc.NavLink(
                     [
-                        html.I(className="fas fa-home me-2"), html.Span("Collectibles"),
+                        html.I(className="fas fa-home me-2"), html.Span(dash.page_registry['pages.collectibles']['name']),
                     ],
                     href="/collectibles",
                     active="exact",
                 ),
             dbc.NavLink(
                     [
-                        html.I(className="fas fa-home me-2"), html.Span("Resources"),
+                        html.I(className="fas fa-home me-2"), html.Span(dash.page_registry['pages.resources']['name']),
                     ],
                     href="/resources",
                     active="exact",
@@ -101,6 +105,7 @@ sidebar = sidebar = html.Div(
             pills=True
         ),
         html.Div([
+                html.I(className="fas fa-home me-2 lead"),
                 html.P("About Us", className="lead"),
             ],
             className='sidebar-header',
@@ -109,14 +114,14 @@ sidebar = sidebar = html.Div(
         [
             dbc.NavLink(
                     [
-                        html.I(className="bi bi-info-circle-fill me-2"), html.Span("Our mission"),
+                        html.I(className="fas fa-home me-2"), html.Span(dash.page_registry['pages.mission']['name']),
                     ],
                     href="/mission",
                     active="exact",
                 ),
             dbc.NavLink(
                     [
-                        html.I(className="fas fa-home me-2"), html.Span("Contact us"),
+                        html.I(className="fas fa-home me-2"), html.Span(dash.page_registry['pages.contact']['name']),
                     ],
                     href="/contact",
                     active="exact",
@@ -132,45 +137,50 @@ sidebar = sidebar = html.Div(
 # =============================================================================
 # Body
 # =============================================================================
-CONTENT_STYLE = {
-    "margin-left": "18rem",
-    "margin-right": "2rem",
-    "padding": "2rem 1rem",
-}
-body = html.Div(id="page-content", style=CONTENT_STYLE)
+body = dbc.Row(
+    [
+        dbc.Col(id="page-content", children=[dash.page_container], width=12, className='my-5 p-4')
+    ]
+)
 
 # =============================================================================
 # Footer
 # =============================================================================
-footer_left = html.A("@tmts_media, TMTS Media",
-		href = "https://twitter.com/tmts_media", 
-		target = "_blank")
-
-footer_right = html.P("2022")
-
-
-footer = html.Footer(
+footer_icon_twitter = dbc.NavLink([html.I(className="fa-brands fa-twitter")], class_name='footer', href='https://twitter.com/tmts_media', active='exact')
+footer_icon_instragram = dbc.NavLink([html.I(className="fa-brands fa-instagram")], class_name='footer', style={'margin-left': '75px'}, href='https://www.instagram.com/tmtsmedia/?hl=es', active='exact')
+footer_left = html.Div(
     [
-    dbc.Col(footer_left, width=10),
-    dbc.Col(footer_right, width=2),
-    ]
-)
+        footer_icon_twitter,
+        footer_icon_instragram
+    ], className='hstack')
+footer_right = html.P("TMTS media, 2022")
 
+
+footer = html.Div(
+        [
+            dbc.Row(
+            [
+            dbc.Col(html.Div(''), width={"size": 2, "order": 1}, className='footer'),
+            dbc.Col([footer_left], width={"size": 5, "order": 2, 'offset': 2}, className= 'footer'),
+            dbc.Col([footer_right], width={"size": 5, "order": 3}, className= 'footer', style={'margin-left': '1500px'}),
+            ],
+            className="g-0 position-static"
+            ),
+        ],
+        className='rounded'
+)
 
 
 # =============================================================================
 # Layout 
 # =============================================================================
-#app.layout = dbc.Container([
- #   dbc.Row([navbar]),
-  #  dbc.Row([
-   #     dbc.Col([sidebar]),
-    #    dbc.Col([body, dash.page_container])
-    #]),
-   # footer,
-#], fluid = True)
+app.layout = html.Div(
+    [
+        dbc.Row(
+            [sidebar, navbar, html.Div(dash.page_container, className= 'mt-5 p-5 centered'), footer], align='center')
+    ], className='overlay-two'
+)
 
-app.layout = dbc.Container([navbar, sidebar, footer, dash.page_container], fluid=True)
 # =============================================================================
 # Main 
 # =============================================================================
