@@ -14,6 +14,7 @@ from dash.dependencies import Input, Output
 # =============================================================================
 app = dash.Dash(__name__, use_pages=True, external_stylesheets=[dbc.themes.DARKLY, dbc.icons.FONT_AWESOME])
 server = app.server
+print(server)
 
 # =============================================================================
 # Layout components
