@@ -32,8 +32,8 @@ def dict_values_to_list_values_in_dict(dict_with_dicts: dict = {}) -> dict:
 
 def compute_rolling_window(input_list: list = [], n_periods: int = 0) -> list:
     output_list = []
-    for i in range (len(input_list) -n_periods -1):
-        rolling_value = (sum(list[i:i+n_periods]) / n_periods)
+    for i in range (len(input_list)):
+        rolling_value = sum(input_list[i:i+n_periods]) / n_periods
         output_list.append(rolling_value)
     return output_list
 

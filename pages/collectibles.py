@@ -38,7 +38,7 @@ def collectible_card(card_header, img, img_title, text):
                 ], width= 8),
             dbc.Col([
                 html.P(text, style={'color': 'white', 'fontSize': TITLE_FONT_SIZE, 'text-align': 'justify'}, className="mt-2 mb-0"),
-                html.Button('Descargar', id='download-button', style={'margin-top': '220px', 'margin-left': '75px'})
+                html.Button('Descargar', id='download-button', style={'margin-top': '190px', 'margin-left': '30px'})
                 ], width= 4)
         ])
     ], className= 'card', style={'width': '600px', 'height': '400px'})    
@@ -49,5 +49,5 @@ layout = dbc.Container(
     [
         dbc.Row(collectible_card('Sticker Tipo Serio', 'assets/CartoonFaces-TS2.png', 'Un sticker', 'Sticker de tipo serio. Algo poco común.'), className= 'mb-2'),
         dbc.Row(collectible_card('Sticker Tipo Mofa', 'assets/CartoonFaces-TM2.png', 'Un sticker', 'Sticker de tipo mofa. Algo muy poco común.'), className='mb-2')
-    ], className= 'centered' # this css class positions the container in the web page
+    ], className= 'centered body-content' # this css class positions the container in the web page
 )

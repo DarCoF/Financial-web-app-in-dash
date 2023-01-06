@@ -28,7 +28,7 @@ upper_card = dbc.Card([
         ], width= 8),
         dbc.Col([
             html.P('Envíanos cualquier duda que tengas y te responderemos lo antes posible. A veces tardamos un poco, mucho ajetreo en nuestra vida. Recuerda que la paciencia es una virtud.', style={'text-align': 'justify'}),
-            html.Button('Enviar', id='contact-button', style={'margin-top': '70px', 'margin-left': '180px'})
+            html.Button('Enviar', id='contact-button', style={'margin-top': '40px', 'margin-left': '140px'})
         ], width= 4)
     ])
 ], class_name= "card", style={'width': '800px', 'height': '400px'})
@@ -48,7 +48,7 @@ layout = dbc.Container(
     [
         dbc.Row(upper_card),
         dbc.Row(lower_card, className='mt-2')
-    ], className= '' # this css class positions the container in the web page
+    ], className= 'centeder body-content', style= {'width': '700px'} # this css class positions the container in the web page
 )
 
 

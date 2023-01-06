@@ -14,7 +14,6 @@ dash.register_page(__name__,
 
 layout = dbc.Container(
     [
-        dcc.Graph(id='test_scatter',
-                  figure= plot_scatter())
+        html.H2(children = 'ERROR 404. User not found.')
     ]
 )

@@ -18,8 +18,8 @@ h2, p, a {
   color:rgb(228, 228, 228);
   }  
 span {
-  font-family: SmallTitles;
-  color:rgb(228, 228, 228);
+  font-family: Brand;
+  color:#e4e4e4;
 }
 
 /* Position component to screen/web page */
@@ -50,11 +50,21 @@ span {
 /* Card style */
 .card {
   opacity:1;
-  background-image: url("");
+  background-image: url(blacboard-science2.jpg);
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
   background-color: #222222;
   width:auto;
   height: auto;
   text-align: center;
+  /* border-color: rgb(201, 201, 201); */
+
+}
+
+.card:hover {
+  box-shadow: 0 0 4px 2px #eeeeee;
 }
 
 /* Image position*/
@@ -79,8 +89,7 @@ span {
 }
 
 .overlay-two {
-  background: url(OTR-Youtube-Banner_v0.0.png) no-repeat center center fixed;
-  background-repeat: repeat-x; 
+  background: url(bg-tmts.jpg) no-repeat center center fixed;
   -webkit-background-size: cover;
   -moz-background-size: cover;
   -o-background-size: cover;
@@ -101,10 +110,12 @@ span {
   }
   
   /* when the user hovers on the sidebar, expand it */
-  .sidebar:hover {
-    width: 14rem;
+  @media(min-width: 992px) {
+    .sidebar:hover{
+      width: 12rem;
+    }  
   }
-  
+
   /* make sure the contents of the navlink don't wrap when navbar collapses */
   .sidebar .nav-link {
     width: 100%;
@@ -153,21 +164,45 @@ span {
   .sidebar:hover .sidebar-header h2 {
     opacity: 1;
   }
-  
-  /* position the content relative to the collapsed sidebar */
-  .content {
-    margin-left: 7rem;
-    margin-right: 2rem;
-    padding: 2rem 1rem;
+
+  /* hide the categories header by default */
+  .sidebar-header p {
+    opacity: 0;
+    margin-left: 1rem;
+    margin-bottom: 0;
+    transition: opacity 0.1s ease-in-out;
   }
 
-/* Navbar config item and subitems font*/
+  /* reveal categories headers when the sidebar is toggled */
+  .sidebar-header p {
+    opacity: 1;
+  }
+
+  /* position the content relative to the collapsed sidebar */
+  .content {
+    margin-left: 0rem;
+    margin-right: 6rem;
+    padding: 4rem 1rem;
+  }
+
+  .body-content {
+    display: block;
+    margin: auto;
+    width: 50%;
+  }
+
+/* Dropdown style */
 .button-dropdown {
   font-size: 1rem !important;
-  font-family: SmallTitles;
+  font-family: Brand;
+  color: #222222;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  margin-bottom: 3rem;
   /*width:380px*/
 }
 
+/* Navbar config item and subitems font */
 .navbar {
   position: fixed;
   top: 0;
@@ -190,15 +225,14 @@ span {
 
 /* Footer style*/
 .footer{
-  position: fixed;
-  bottom:0;
+  position: relative;
   background-color: #191a19;
   height: 3rem;
-  margin-top: 0rem;
-  clear: both;
-  font-size: 1.2rem !important;
-  font-family: SmallTitles;
+  font-size: 1rem !important;
+  font-family: Brand;
   color:rgb(228, 228, 228);
+  text-align: center;
+  border: aqua;
 }
 
 

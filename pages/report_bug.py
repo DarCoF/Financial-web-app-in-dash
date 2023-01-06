@@ -14,7 +14,7 @@ dash.register_page(__name__,
 )
 
 # GLOBAL CONSTANTS
-CONTENT_FONT_SIZE = 36
+CONTENT_FONT_SIZE = 24
 TITLE_FONT_SIZE = 14
 
 # LAYOUT COMPONENTS
@@ -29,13 +29,13 @@ report_card = dbc.Card([
         ], width= 8),
         dbc.Col([
             html.P('Si hay encontrado algún error, háznoslo saber. No somos omnipresentes, así que vuestra ayuda es bienvenida.', style={'text-align': 'justify', 'margin-right': '20px'}),
-            html.Button('Enviar', id='contact-button', style={'margin-top': '105px', 'margin-left': '180px', 'margin-right': '20px'})
+            html.Button('Enviar', id='contact-button', style={'margin-top': '80px', 'margin-left': '140px', 'margin-right': '150px'})
         ], width= 4)
     ])
-], class_name= "card", style={'width': '800px', 'height': '400px'})
+], class_name= "card")
 
 layout = dbc.Container(
     [
         report_card
     ]
-, class_name='center-screen')
+, class_name='center-screen body-content', style={'width': '800px', 'height': '400px'})

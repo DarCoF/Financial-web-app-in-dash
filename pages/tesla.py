@@ -1,6 +1,10 @@
+from enum import Enum
+from textwrap import fill
+from turtle import bgcolor, fillcolor, width
 import pandas as pd
 import plotly
 import plotly.express as px
+import plotly.graph_objects as go
 
 import dash
 from dash import dcc, html, callback, Input, Output
@@ -8,6 +12,7 @@ import dash_bootstrap_components as dbc
 from dash import dash_table
 from dash.exceptions import PreventUpdate
 from pages.tabs import layout_tabs as lt
+from pipeline.data_processing import TeslaFinancials
 
 from alpha_vantage.timeseries import TimeSeries  
 
@@ -20,7 +25,25 @@ dash.register_page(__name__,
                    description='Summary of Tesla stock'
 )
 
-
+# -----------------------------------------------------------------------------------
+# LOCAL VARIABLES
+# -----------------------------------------------------------------------------------
+class figure_settings(Enum):
+    BACKGROUND = 'rgba(0,0,0,0)'
+    TEXT_COLOR = '#e4e4e4'
+    MARKER_COLOR = '#cc0000'
+    BORDER_COLOR = '#990202'
+    Y_GRID_COLOR = '#333333'
+    HOVER_LABEL_BG_COLOR = 'rgba(133,0,0,0.75)'
+    HOVER_LABEL_BORDER_COLOR = 'rgba(0,0,0,0)'
+    TEXT_SIZE = 12
+    TITLE_TEXT_SIZE = 16
+    TEXT_FONT = 'Brand'
+    OPACITY = 0.6
+    TITLE_POSITION = 0.5
+    LINE_WIDTH = 0.5
+    TYPES_SH = ['institutional', 'insider', 'retail']
+    PERCENTAGE_SH = [43.00, 14.39, 42.61] # Institutional, insiders and retail.
 # -----------------------------------------------------------------------------------
 # GENERAL METHODS
 # -----------------------------------------------------------------------------------
@@ -35,6 +58,242 @@ def get_layout(func):
     ])
     return layout
 
+def get_bar_plot(df, x, y, yaxis_title, xaxis_title, plot_title):
+        """_summary_
+
+        Args:
+            df (_type_): _description_
+            x (_type_): _description_
+            y (_type_): _description_
+            yaxis_title (_type_): _description_
+            xaxis_title (_type_): _description_
+            plot_title (_type_): _description_
+
+        Returns:
+            _type_: _description_
+        """
+         # Instantiate figure object
+        fig = go.Figure()
+        # Add trace to figure object containing scatter plot
+        fig.add_trace(go.Bar(
+                x= df[x],
+                y= df[y],
+                orientation="v",              # 'v','h': orientation of the marks
+        )) 
+        #fig.update_layout(xaxis_title='Year', yaxis_title='Revenue (in millions of $)', plot_bgcolor= 'grey')
+        fig.update_layout(paper_bgcolor= figure_settings.BACKGROUND.value, 
+                        plot_bgcolor= figure_settings.BACKGROUND.value,
+                        xaxis_title= xaxis_title,
+                        yaxis_title= yaxis_title,
+                        font={
+                            'color': figure_settings.TEXT_COLOR.value,
+                            'family':figure_settings.TEXT_FONT.value,
+                            'size': figure_settings.TEXT_SIZE.value
+                        },
+                        title= {
+                            'text': plot_title,
+                            'x': figure_settings.TITLE_POSITION.value
+                            },
+                        title_font= {
+                            'size': figure_settings.TITLE_TEXT_SIZE.value,
+                            'color': figure_settings.TEXT_COLOR.value,
+                            'family': figure_settings.TEXT_FONT.value
+                        },
+                        title_pad= {
+                            't': 10
+                        },
+                        hoverlabel= dict(
+                            bgcolor= figure_settings.HOVER_LABEL_BG_COLOR.value,
+                            bordercolor= figure_settings.HOVER_LABEL_BORDER_COLOR.value,
+                            font = dict(family= figure_settings.TEXT_FONT.value, color= figure_settings.TEXT_COLOR.value)
+                        )
+                        )
+        fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor= figure_settings.Y_GRID_COLOR.value)
+        fig.update_xaxes(showline=True, linewidth=1, linecolor= figure_settings.TEXT_COLOR.value)
+        fig.update_traces(overwrite=True,
+            marker= dict(
+                line= dict(
+                    width= figure_settings.LINE_WIDTH.value,
+                    color= figure_settings.MARKER_COLOR.value
+                ),
+                color= figure_settings.BORDER_COLOR.value,
+                opacity= figure_settings.OPACITY.value
+            )
+        )
+        return fig
+
+def get_scatter_plot(df, x, y, yaxis_title, xaxis_title, plot_title, hover_label_text, flag_legend = False, legend_title = 'default'):
+        """_summary_
+
+        Args:
+            df (_type_): _description_
+            x (_type_): _description_
+            y (_type_): _description_
+            yaxis_title (_type_): _description_
+            xaxis_title (_type_): _description_
+            plot_title (_type_): _description_
+
+        Returns:
+            _type_: _description_
+        """
+        # Instantiate figure object
+        fig = go.Figure()
+        # Add trace to figure object containing scatter plot
+        fig.add_trace(go.Scatter(
+                x= df[x],
+                y= df[y],
+                showlegend= flag_legend,
+                name = y
+        ))
+        # Select background colors and modify axis attributes.
+        fig.update_layout(paper_bgcolor= figure_settings.BACKGROUND.value, 
+                        plot_bgcolor= figure_settings.BACKGROUND.value,
+                        xaxis_title= xaxis_title,
+                        yaxis_title= yaxis_title,
+                        font={
+                            'color': figure_settings.TEXT_COLOR.value,
+                            'family':figure_settings.TEXT_FONT.value,
+                            'size': figure_settings.TEXT_SIZE.value
+                        },
+                        title= {
+                            'text': plot_title,
+                            'x': figure_settings.TITLE_POSITION.value
+                            },
+                        title_font= {
+                            'size': figure_settings.TITLE_TEXT_SIZE.value,
+                            'color': figure_settings.TEXT_COLOR.value,
+                            'family': figure_settings.TEXT_FONT.value
+                        },
+                        title_pad= {
+                            't': 10
+                        },
+                        hoverlabel= dict(
+                            bgcolor= figure_settings.HOVER_LABEL_BG_COLOR.value,
+                            bordercolor= figure_settings.HOVER_LABEL_BORDER_COLOR.value,
+                            font = dict(family= figure_settings.TEXT_FONT.value, color= figure_settings.TEXT_COLOR.value)
+                        ),
+                        legend = dict(title = legend_title)
+                        )
+        fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor= figure_settings.Y_GRID_COLOR.value)
+        fig.update_xaxes(showline=True, linewidth=1, linecolor=figure_settings.TEXT_COLOR.value, showgrid=False)
+        fig.update_traces(
+            mode= 'lines',
+            line= dict(width= figure_settings.LINE_WIDTH.value),
+            line_color= figure_settings.MARKER_COLOR.value,
+            fill='tonexty',
+            opacity= figure_settings.OPACITY.value,
+            text = hover_label_text,
+            hoveron= 'points',
+            hoverinfo= 'text+x+y'
+        )
+        return fig
+
+def get_pie_plot(labels, values, plot_title):
+        # Instantiate figure object
+        fig = go.Figure()
+        # Add trace to figure object containing scatter plot
+        fig.add_trace(go.Pie(
+                labels= labels,
+                values= values,
+                opacity = figure_settings.OPACITY.value
+        ))
+        # Select background colors and modify axis attributes.
+        fig.update_layout(paper_bgcolor= figure_settings.BACKGROUND.value, 
+                        plot_bgcolor= figure_settings.BACKGROUND.value,
+                        font={
+                            'color': figure_settings.TEXT_COLOR.value,
+                            'family':figure_settings.TEXT_FONT.value,
+                            'size': figure_settings.TEXT_SIZE.value
+                        },
+                        title= {
+                            'text': plot_title,
+                            'x': figure_settings.TITLE_POSITION.value
+                            },
+                        title_font= {
+                            'size': figure_settings.TITLE_TEXT_SIZE.value,
+                            'color': figure_settings.TEXT_COLOR.value,
+                            'family': figure_settings.TEXT_FONT.value
+                        },
+                        title_pad= {
+                            't': 10
+                        },
+                        hoverlabel= dict(
+                            bgcolor= figure_settings.HOVER_LABEL_BG_COLOR.value,
+                            bordercolor= figure_settings.HOVER_LABEL_BORDER_COLOR.value,
+                            font = dict(family= figure_settings.TEXT_FONT.value, color= figure_settings.TEXT_COLOR.value)
+                        )
+        )
+        fig.update_traces(
+            marker= dict(
+                colors = [figure_settings.MARKER_COLOR.value, figure_settings.BORDER_COLOR.value, figure_settings.HOVER_LABEL_BG_COLOR.value]
+            )
+        )
+        return fig
+
+def get_line_plot(df, x, y, yaxis_title, xaxis_title, plot_title, hover_label_text, flag_legend = True):
+        """_summary_
+
+        Args:
+            df (_type_): _description_
+            x (_type_): _description_
+            y (_type_): _description_
+            yaxis_title (_type_): _description_
+            xaxis_title (_type_): _description_
+            plot_title (_type_): _description_
+
+        Returns:
+            _type_: _description_
+        """
+        # Instantiate figure object
+        fig = go.Figure()
+        # Add trace to figure object containing scatter plot
+        fig.add_trace(go.Line(
+                x= df[x],
+                y= df[y],
+                showlegend= flag_legend,
+                name = y
+
+        ))
+        # Select background colors and modify axis attributes.
+        fig.update_layout(paper_bgcolor= figure_settings.BACKGROUND.value, 
+                        plot_bgcolor= figure_settings.BACKGROUND.value,
+                        xaxis_title= xaxis_title,
+                        yaxis_title= yaxis_title,
+                        font={
+                            'color': figure_settings.TEXT_COLOR.value,
+                            'family':figure_settings.TEXT_FONT.value,
+                            'size': figure_settings.TEXT_SIZE.value
+                        },
+                        title= {
+                            'text': plot_title,
+                            'x': figure_settings.TITLE_POSITION.value
+                            },
+                        title_font= {
+                            'size': figure_settings.TITLE_TEXT_SIZE.value,
+                            'color': figure_settings.TEXT_COLOR.value,
+                            'family': figure_settings.TEXT_FONT.value
+                        },
+                        title_pad= {
+                            't': 10
+                        },
+                        hoverlabel= dict(
+                            bgcolor= figure_settings.HOVER_LABEL_BG_COLOR.value,
+                            bordercolor= figure_settings.HOVER_LABEL_BORDER_COLOR.value,
+                            font = dict(family= figure_settings.TEXT_FONT.value, color= figure_settings.TEXT_COLOR.value)
+                        )
+                        )
+        fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor= figure_settings.Y_GRID_COLOR.value)
+        fig.update_xaxes(showline=True, linewidth=1, linecolor=figure_settings.TEXT_COLOR.value, showgrid=False)
+        fig.update_traces(
+            mode= 'lines',
+            line= dict(width= 2),
+            line_color= figure_settings.MARKER_COLOR.value,
+            opacity= figure_settings.OPACITY.value,
+            text = hover_label_text,
+            hoveron= 'points',
+            hoverinfo= 'text+x+y'
+        )
+        return fig
 # -----------------------------------------------------------------------------------
 # SUMMARY LAYOUT
 # -----------------------------------------------------------------------------------
@@ -83,11 +342,11 @@ def get_fundamentals_body() -> list:
     body = [
         dbc.Row([
             dbc.Col([
-                dcc.Dropdown(id='freq-dropdown',options=['QoQ', 'TTM'], value='QoQ', placeholder='Select timescale...', className= 'mb-2')
+                dcc.Dropdown(id='freq-dropdown',options=['QoQ', 'TTM'], value='QoQ', placeholder='Select timescale...', className= 'button-dropdown mb-2')
             ], width= 2),
             dbc.Col([], width=8),
             dbc.Col([
-                dcc.Dropdown(id='fund-metric', options=['Revenue', 'Gross Profit', 'Income from Operations', 'Net Income', 'Adj EBITDA', 'FcF'], value='Revenue', placeholder='Select metric...', className= 'mb-2')
+                dcc.Dropdown(id='fund-metric', options=['Revenue', 'Gross Profit', 'Income from Operations', 'Net Income', 'Adj EBITDA', 'FcF'], value='Revenue', placeholder='Select metric...', className= 'button-dropdown mb-2')
             ], width=2)
         ], justify='end'),
         dbc.Row([
@@ -97,7 +356,7 @@ def get_fundamentals_body() -> list:
         ], justify='center'),
         dbc.Row([
             dbc.Col([
-                dcc.Dropdown(id='margin-metric', options=['Gross Profit Margin', 'Operating Income Margin', 'Net Income Margin', 'Adj EBITDA Margin'], value='Gross Profit Margin', placeholder='Select margin...', className= 'mb-2 mt-2')
+                dcc.Dropdown(id='margin-metric', options=['Gross Profit Margin', 'Operating Income Margin', 'Net Income Margin', 'Adj EBITDA Margin'], value='Gross Profit Margin', placeholder='Select margin...', className= 'button-dropdown mb-2 mt-2')
             ], width=2)
         ], justify='end'),
         dbc.Row([
@@ -117,7 +376,7 @@ def get_liq_solvency_body() -> list:
     body = [
         dbc.Row([
             dbc.Col([
-                dcc.Dropdown(id='liq-ratio', options=['Current Ratio', 'Quick Ratio', 'Debt to Equity Ratio', 'Debt to Assets Ratio', 'Equity Ratio'], value='Current Ratio', placeholder='Select ratio...', className= 'mb-2')
+                dcc.Dropdown(id='liq-ratio', options=['Current Ratio', 'Quick Ratio', 'Debt to Equity Ratio', 'Debt to Assets Ratio', 'Equity Ratio'], value='Current Ratio', placeholder='Select ratio...', className= 'button-dropdown mb-2')
             ], width=2)
         ], justify='end'),
         dbc.Row([
@@ -153,11 +412,11 @@ def get_growth_body() -> list:
     body = [
         dbc.Row([
             dbc.Col([
-                dcc.Dropdown(id='freq-dropdown-2',options=['QoQ', 'YoY'], value='QoQ', placeholder='Select timescale...', className= 'mb-2')
+                dcc.Dropdown(id='freq-dropdown-2',options=['QoQ', 'YoY'], value='QoQ', placeholder='Select timescale...', className= 'button-dropdown mb-2')
             ], width= 2),
             dbc.Col([], width=8),
             dbc.Col([
-                dcc.Dropdown(id='growth-metric', options=['Revenue Growth', 'Gross Profit Growth', 'Income from Operations Growth', 'Net Income Growth', 'Adj EBITDA Growth', 'EPS Growth', 'FcF Growth'], value='Revenue', placeholder='Select metric...', className= 'mb-2')
+                dcc.Dropdown(id='growth-metric', options=['Revenue Growth', 'Gross Profit Growth', 'Income from Operations Growth', 'Net Income Growth', 'Adj EBITDA Growth', 'FcF Growth'], value='Revenue Growth', placeholder='Select metric...', className= 'button-dropdown mb-2')
             ], width=2)
         ], justify='end'),
         dbc.Row([
@@ -177,11 +436,11 @@ def get_performance_body() -> list:
     body = [
         dbc.Row([
             dbc.Col([
-                dcc.Dropdown(id='freq-dropdown-3',options=['YoY', 'TTM'], value='YoY', placeholder='Select timescale...', className= 'mb-2')
+                dcc.Dropdown(id='freq-dropdown-3',options=['QoQ', 'TTM'], value='QoQ', placeholder='Select timescale...', className= 'button-dropdown mb-2')
             ], width= 2),
             dbc.Col([], width=8),
             dbc.Col([
-                dcc.Dropdown(id='perf-metric', options=['Invested Capital', 'Total Assets', 'ROE', 'ROA', 'Operating ROIC', 'FcF ROIC', 'WACC'], value='Invested Capital', placeholder='Select metric...', className= 'mb-2')
+                dcc.Dropdown(id='perf-metric', options=['Invested Capital', 'Total Assets', 'ROE', 'ROA', 'Operating ROIC', 'FcF ROIC', 'WACC'], value='Invested Capital', placeholder='Select metric...', className= 'button-dropdown mb-2')
             ], width=2)
         ], justify='end'),
         dbc.Row([
@@ -221,22 +480,35 @@ performance_metrics_layout = get_layout(get_performance_body())
 # -----------------------------------------------------------------------------------
 # EQUITY LAYOUT
 # -----------------------------------------------------------------------------------
-df = pd.read_csv("docs/Caste.csv")
-df = df[df['state_name']=='Maharashtra']
-df = df.groupby(['year','gender',], as_index=False)[['detenues','under_trial','convicts','others']].sum()
-fig = px.pie(
-        data_frame=df,
-        names="gender",
-        values="convicts",
-        color="gender",               # differentiate color of marks
-        opacity=0.9,                  # set opacity of markers (from 0 to 1)
-        labels={"convicts":"Convicts in Maharashtra",
-                "gender":"Gender"},           # map the labels of the figure
-        title='Indian Prison Statistics', # figure title
-        template='gridon'            # 'ggplot2', 'seaborn', 'simple_white', 'plotly',
-        )
+# Instantiate locally tesla class
+tesla = TeslaFinancials()
 
-df_solar = pd.read_csv('docs/solar.csv')
+# Get outstanding shares dict
+data = tesla.get_outstanding_shares()
+df = pd.DataFrame.from_dict(data).sort_index(ascending=False)
+
+# Create scatter charts
+fig = go.Figure()
+fig = get_scatter_plot(df, 'date', 'WeightedAverageSharesBasic', 'Shares (in millions)', 'Quarter', '<b>Tesla · QoQ Revenue Growth<b>', 'SHBas', True, 'Types of shares')
+fig.add_trace(go.Scatter(
+                x= df['date'],
+                y= df['WeightedAverageSharesDiluted'],
+                name= 'WeightedAverageSharesDiluted',
+                mode= 'lines',
+                line= dict(width= figure_settings.LINE_WIDTH.value),
+                line_color= figure_settings.HOVER_LABEL_BG_COLOR.value,
+                fill='tonexty',
+                fillcolor= figure_settings.HOVER_LABEL_BG_COLOR.value,
+                opacity= figure_settings.OPACITY.value,
+                text = 'SHDil',
+                hoveron= 'points',
+                hoverinfo= 'text+x+y'
+        ))
+        
+# Create pie chart
+# TODO: add data to ddbb. For now, random data as placeholder.
+fig_pie = get_pie_plot(figure_settings.TYPES_SH.value, figure_settings.PERCENTAGE_SH.value, 'Institutional vs Retail vs Insider share distribution')
+
 
 def equity_body() -> list:
     body = [
@@ -244,7 +516,7 @@ def equity_body() -> list:
             dbc.Col([
                 dbc.Row([
                     dbc.Col([
-                        dcc.Graph(id= 'pie-chart', figure= fig)
+                        dcc.Graph(id= 'pie-chart', figure= fig_pie)
                     ])
                 ], justify= 'center'),
                 dbc.Row([
@@ -261,15 +533,15 @@ def equity_body() -> list:
             dbc.Col([
                 dbc.Row([
                     dbc.Col([
-                        dcc.Graph(id='shares-graph')
+                        dcc.Graph(id='shares-graph', figure = fig)
                     ])
                 ], justify= 'end'),
                 dbc.Row([
                     dbc.Col([
                         dbc.Card([
-                            dbc.CardBody([
-                                dash_table.DataTable(df_solar.to_dict('records'), [{"name": i, "id": i} for i in df.columns])
-                            ])
+                           # dbc.CardBody([
+                            #    dash_table.DataTable(df_solar.to_dict('records'), [{"name": i, "id": i} for i in df.columns])
+                            #])
                         ], class_name='mt-2 bg-secondary', color= 'dark', outline=True)
                     ])
                 ], justify= 'end')
@@ -289,7 +561,7 @@ def price_forecast_body() -> list:
         dbc.Row([
             dbc.Col([], width=10),
             dbc.Col([
-                dcc.Dropdown(id='forecast-metric', options=['4 qtr rate FcF ROIC', '4qtr rate Invested Capital'], value='4 qtr rate FcF ROIC', placeholder='Select metric...', className= 'mb-2')
+                dcc.Dropdown(id='forecast-metric', options=['4 qtr rate FcF ROIC', '4qtr rate Invested Capital'], value='4 qtr rate FcF ROIC', placeholder='Select metric...', className= 'button-dropdown mb-2')
             ], width=2)
         ], justify='end'),
         dbc.Row([
@@ -300,7 +572,7 @@ def price_forecast_body() -> list:
         dbc.Row([
             dbc.Col([], width=10),
             dbc.Col([
-                dcc.Dropdown(id='forecast-timescale', options=['QoQ', 'YoY'], value='QoQ', placeholder='Select timescale...', className= 'mt-2 mb-2')
+                dcc.Dropdown(id='forecast-timescale', options=['QoQ', 'YoY'], value='QoQ', placeholder='Select timescale...', className= 'button-dropdown mt-2 mb-2')
             ], width=2)
         ], justify='end'),
         dbc.Row([
@@ -319,13 +591,13 @@ def price_forecast_body() -> list:
             dbc.Col([
                 dbc.Card([
                     dbc.CardHeader(
-                        html.P(['{} price target for 2030'.format(dash.page_registry['pages.tesla']['name'])], style={'color': 'white', 'fontSize': 18}, className='text-center mt-1 mb-0')
+                        html.P(['{} price target for 2030'.format(dash.page_registry['pages.tesla']['name'])], style={'color': 'white', 'fontSize': 14}, className='text-center mt-1 mb-0')
                     ),
                     html.Hr(),
                     dbc.CardBody([
-                        html.P('{} $/share'.format('PLACEHOLDER PRICE/SHARE'), id='target-id', style={'color': 'white', 'fontSize': 14}, className='mt-1')
+                        html.P('{} $/share'.format('1820'), id='target-id', style={'color': 'white', 'fontSize': 20}, className='mt-1')
                     ]),
-                    dbc.CardFooter(html.P(['* Number of shares outstanding equal to {}. Multiple considered to arrive at estimated share price equal to {}'.format('PLACEHOLDER SHARESOUTSTANDING', 'PLACEHOLDER MULTIPLE')], 
+                    dbc.CardFooter(html.P(['* Number of weighted diluted outstanding shares: {}. Price multiple: {}.'.format('3.460.000.000', '35')], 
                                     style={'color': 'white', 'fontSize': 10}, className='text-center mt-1 mb-0'))
                 ], class_name='mt-2 bg-secondary', color= 'dark', outline=True)
             ], width= 3)
@@ -358,6 +630,11 @@ layout = dbc.Tabs(
 # -----------------------------------------------------------------------------------
 # CALLBACKS
 # -----------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------------
+# Instantiate data class
+# -----------------------------------------------------------------------------------
+tesla = TeslaFinancials()
+
 #-----------------------------------------------------------------------------
 # SUMMARY CALLBACKS
 # -----------------------------------------------------------------------------------
@@ -366,8 +643,16 @@ layout = dbc.Tabs(
     [Input(component_id='my_interval', component_property='n_intervals')]
 )
 def update_graph(n):
-    """Pull financial data from Alpha Vantage and update graph every 2 minutes"""
-    ttm_data, ttm_meta_data = ts.get_intraday(symbol='TSLA',interval='1min',outputsize='compact')
+    """ Pull financial data from Alpha Vantage and update graph every 2 minutes
+
+    Args:
+        n (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
+    # Retreive data from Alpha Vantage API
+    ttm_data, ttm_meta_data = ts.get_intraday(symbol='TSLA',interval='15min',outputsize='compact')
     df = ttm_data.copy()
     df=df.transpose()
     df.rename(index={"1. open":"open", "2. high":"high", "3. low":"low",
@@ -375,14 +660,10 @@ def update_graph(n):
     df=df.reset_index().rename(columns={'index': 'indicator'})
     df = pd.melt(df,id_vars=['indicator'],var_name='date',value_name='rate')
     df = df[df['indicator']!='volume']
-    line_chart = px.line(
-                    data_frame=df,
-                    x='date',
-                    y='rate',
-                    color='indicator',
-                    title="Stock: {}".format(ttm_meta_data['2. Symbol'])
-                 )
-    return (line_chart)
+
+    # Plot line graph
+    fig = get_line_plot(df, 'date', 'rate', 'Share value ($)', 'hour', '<b>"Symbol: ${}"<b>'.format(ttm_meta_data['2. Symbol']), '$TSLA')
+    return fig
 
 @callback([
     Output(component_id='target-price', component_property='children'),
@@ -409,48 +690,66 @@ def update_footer(n):
     Input('fund-metric', 'value')]
 )
 def update_fund_graph(input_1, input_2):
-    
-    df = pd.read_csv("docs/Caste.csv")
-    df = df[df['state_name']=='Maharashtra']
-    df = df.groupby(['year','gender',], as_index=False)[['detenues','under_trial','convicts','others']].sum()
 
     if input_1 == 'QoQ' and input_2 == 'Revenue':
-        fig = px.bar(
-                data_frame=df,
-                x="year",
-                y="convicts",
-                color="gender",               # differentiate color of marks
-                opacity=0.9,                  # set opacity of markers (from 0 to 1)
-                orientation="v",              # 'v','h': orientation of the marks
-                barmode='relative',           # in 'overlay' mode, bars are top of one another.
-                labels={"convicts":"Convicts in Maharashtra",
-                        "gender":"Gender"},           # map the labels of the figure
-                title='Indian Prison Statistics', # figure title
-                template='gridon'            # 'ggplot2', 'seaborn', 'simple_white', 'plotly',
-        )
-        fig.update
+        data = tesla.get_revenue(timescale= 'QoQ')
+        df = pd.DataFrame.from_dict(data).sort_index(ascending=False)
+        fig = get_bar_plot(df, 'date', 'TotalRevenues', 'Revenue (m$)', 'Quarter', '<b>Tesla · Revenue<b>')
+
     elif input_1 == 'QoQ' and input_2 == 'Gross Profit':
-        fig = ''
+        data = tesla.get_gross_profit(timescale= 'QoQ')
+        df = pd.DataFrame.from_dict(data).sort_index(ascending=False)
+        fig = get_bar_plot(df, 'date', 'GrossProfit', 'Gross Profit (m$)', 'Quarter', '<b>Tesla · Gross Profit<b>')
+
     elif input_1 == 'QoQ' and input_2 == 'Income from Operations':
-        fig = ''
+        data = tesla.get_income_ops(timescale= 'QoQ')
+        df = pd.DataFrame.from_dict(data).sort_index(ascending=False)
+        fig = get_bar_plot(df, 'date', 'IncomeFromOperations', 'Income Ops (m$)', 'Quarter', '<b>Tesla · Income Operations<b>')
+
     elif input_1 == 'QoQ' and input_2 == 'Net Income':
-        fig = ''
+        data = tesla.get_net_income(timescale= 'QoQ')
+        df = pd.DataFrame.from_dict(data).sort_index(ascending=False)
+        fig = get_bar_plot(df, 'date', 'NetIncome', 'Net Income (m$)', 'Quarter', '<b>Tesla · Net Income<b>')
+        
     elif input_1 == 'QoQ' and input_2 == 'Adj EBITDA':
-        fig = ''
+        data = tesla.get_adj_ebitda(timescale= 'QoQ')
+        df = pd.DataFrame.from_dict(data).sort_index(ascending=False)
+        fig = get_bar_plot(df, 'date', 'AdjustedEBITDA', 'Adj EBITDA (m$)', 'Quarter', '<b>Tesla · Adj EBITDA<b>')
+        
     elif input_1 == 'QoQ' and input_2 == 'FcF':
-        fig = ''
+        data = tesla.get_fcf(timescale= 'QoQ')
+        df = pd.DataFrame.from_dict(data).sort_index(ascending=False)
+        fig = get_bar_plot(df, 'date', 'FcF', 'FCF (m$)', 'Quarter', '<b>Tesla · FCF<b>')
+        
     elif input_1 == 'TTM' and input_2 == 'Revenue':
-        fig = ''
+        data = tesla.get_revenue(timescale= 'TTM')
+        df = pd.DataFrame.from_dict(data).sort_index(ascending=False)
+        fig = get_bar_plot(df, 'date', 'TTMTotalRevenues', 'TTM Revenue (m$)', 'Quarter', '<b>Tesla · TTM Revenue<b>')
+
     elif input_1 == 'TTM' and input_2 == 'Gross Profit':
-        fig = ''
+        data = tesla.get_gross_profit(timescale= 'TTM')
+        df = pd.DataFrame.from_dict(data).sort_index(ascending=False)
+        fig = get_bar_plot(df, 'date', 'TTMGrossProfit', 'TTM Gross Profit (m$)', 'Quarter', '<b>Tesla · TTM Gross Profit<b>')
+
     elif input_1 == 'TTM' and input_2 == 'Income from Operations':
-        fig = ''
+        data = tesla.get_income_ops(timescale= 'TTM')
+        df = pd.DataFrame.from_dict(data).sort_index(ascending=False)
+        fig = get_bar_plot(df, 'date', 'TTMIncomeFromOperations', 'TTM Income Ops (m$)', 'Quarter', '<b>Tesla · TTM Income Operations<b>')
+        
     elif input_1 == 'TTM' and input_2 == 'Net Income':
-        fig = ''
+        data = tesla.get_net_income(timescale= 'TTM')
+        df = pd.DataFrame.from_dict(data).sort_index(ascending=False)
+        fig = get_bar_plot(df, 'date', 'TTMNetIncome', 'TTMNetIncome (m$)', 'Quarter', '<b>Tesla · TTM Net Income<b>')
+        
     elif input_1 == 'TTM' and input_2 == 'Adj EBITDA':
-        fig = ''
+        data = tesla.get_adj_ebitda(timescale= 'TTM')
+        df = pd.DataFrame.from_dict(data).sort_index(ascending=False)
+        fig = get_bar_plot(df, 'date', 'TTMAdjustedEBITDA', 'TTMAdjEBITDA (m$)', 'Quarter', '<b>Tesla · TTM Adjusted EBITDA<b>')
+        
     else:
-        fig = ''
+        data = tesla.get_fcf(timescale= 'TTM')
+        df = pd.DataFrame.from_dict(data).sort_index(ascending=False)
+        fig = get_bar_plot(df, 'date', 'TTMFcF', 'TTM FCF (m$)', 'Quarter', '<b>Tesla · TTM FCF<b>')
     return fig
 
 @callback(
@@ -458,40 +757,48 @@ def update_fund_graph(input_1, input_2):
     [Input('freq-dropdown', 'value'),
     Input('margin-metric', 'value')]
 )
-def update_fund_graph(input_1, input_2):
-    df = pd.read_csv("docs/Caste.csv")
-    df = df[df['state_name']=='Maharashtra']
-    df = df.groupby(['year','gender',], as_index=False)[['detenues','under_trial','convicts','others']].sum()
+def update_fund_margin_graph(input_1, input_2):
 
     if input_1 == 'QoQ' and input_2 == 'Gross Profit Margin':
-        fig = px.bar(
-                data_frame=df,
-                x="year",
-                y="convicts",
-                color="gender",               # differentiate color of marks
-                opacity=0.9,                  # set opacity of markers (from 0 to 1)
-                orientation="v",              # 'v','h': orientation of the marks
-                barmode='relative',           # in 'overlay' mode, bars are top of one another.
-                labels={"convicts":"Convicts in Maharashtra",
-                        "gender":"Gender"},           # map the labels of the figure
-                title='Indian Prison Statistics', # figure title
-                template='gridon'            # 'ggplot2', 'seaborn', 'simple_white', 'plotly',
-        )
-        fig.update
+        data = tesla.get_gross_profit_margin(timescale= 'QoQ')
+        df = pd.DataFrame.from_dict(data).sort_index(ascending=False)
+        fig = get_scatter_plot(df, 'date', 'RatioGrossProfit/TotalRevenues', 'Gross profit margin (%)', 'Quarter', '<b>Tesla · Gross Profit Margin<b>', '%GM')
+
     elif input_1 == 'QoQ' and input_2 == 'Operating Income Margin':
-        fig = ''
+        data = tesla.get_income_ops_margin(timescale= 'QoQ')
+        df = pd.DataFrame.from_dict(data).sort_index(ascending=False)
+        fig = get_scatter_plot(df, 'date', 'RatioIncomeFromOperations/TotalRevenues', 'Income ops margin (%)', 'Quarter', '<b>Tesla · Income Operations Margin<b>', '%IOps')
+
     elif input_1 == 'QoQ' and input_2 == 'Net Income Margin':
-        fig = ''
+        data = tesla.get_net_income_margin(timescale= 'QoQ')
+        df = pd.DataFrame.from_dict(data).sort_index(ascending=False)
+        fig = get_scatter_plot(df, 'date', 'RatioNetIncome/TotalRevenues', 'Net Income margin (%)', 'Quarter', '<b>Tesla · Net Income Margin<b>', '%NI')
+
     elif input_1 == 'QoQ' and input_2 == 'Adj EBITDA Margin':
-        fig = ''
+        data = tesla.get_adj_ebitda_margin(timescale= 'QoQ')
+        df = pd.DataFrame.from_dict(data).sort_index(ascending=False)
+        fig = get_scatter_plot(df, 'date', 'RatioAdjustedEBITDA/TotalRevenues', 'Adj EBITDA margin (%)', 'Quarter', '<b>Tesla · Adjusted EBITDA Margin<b>', '%AEBITDA')
+
     elif input_1 == 'TTM' and input_2 == 'Gross Profit Margin':
-        fig = ''
+        data = tesla.get_gross_profit_margin(timescale= 'TTM')
+        df = pd.DataFrame.from_dict(data).sort_index(ascending=False)
+        fig = get_scatter_plot(df, 'date', 'RatioTTMGrossProfit/TTMTotalRevenues', 'TTM Gross profit margin (%)', 'Quarter', '<b>Tesla · TTM Gross Profit Margin<b>', '%TTMGM')
+
     elif input_1 == 'TTM' and input_2 == 'Operating Income Margin':
-        fig = ''
+        data = tesla.get_income_ops_margin(timescale= 'TTM')
+        df = pd.DataFrame.from_dict(data).sort_index(ascending=False)
+        fig = get_scatter_plot(df, 'date', 'RatioTTMIncomeFromOperations/TTMTotalRevenues', 'TTM Income ops margin (%)', 'Quarter', '<b>Tesla · TTM Income Operations Margin<b>', '%TTMIOps')
+
     elif input_1 == 'TTM' and input_2 == 'Net Income Margin':
-        fig = ''
+        data = tesla.get_net_income_margin(timescale= 'TTM')
+        df = pd.DataFrame.from_dict(data).sort_index(ascending=False)
+        fig = get_scatter_plot(df, 'date', 'RatioTTMNetIncome/TTMTotalRevenues', 'TTM Net Income margin (%)', 'Quarter', '<b>Tesla · TTM Net Income Margin<b>', '%TTMNI')
+
     else:
-        fig = ''
+        data = tesla.get_adj_ebitda_margin(timescale= 'TTM')
+        df = pd.DataFrame.from_dict(data).sort_index(ascending=False)
+        fig = get_scatter_plot(df, 'date', 'RatioTTMAdjustedEBITDA/TTMTotalRevenues', 'TTM Adj EBITDA margin (%)', 'Quarter', '<b>Tesla · TTM Adjusted EBITDA Margin<b>', '%TTMAEBITDA')
+
     return fig
 
 
@@ -503,39 +810,27 @@ def update_fund_graph(input_1, input_2):
     Input('liq-ratio', 'value')
 )
 def update_ratio_graph(input):
-    df = pd.read_csv("docs/Caste.csv")
-    df = df[df['state_name']=='Maharashtra']
-    df = df.groupby(['year','gender',], as_index=False)[['detenues','under_trial','convicts','others']].sum()
-    df.drop(df[df['gender'] == 'Female'].index, inplace = True)
 
     if input == 'Current Ratio':
-        fig = px.line(
-                data_frame=df,
-                x="year",
-                y="convicts",
-                labels={"convicts":"Convicts in Maharashtra",
-                        "gender":"Gender"},           # map the labels of the figure
-                height=400,
-                title='Indian Prison Statistics', # figure title
-                template='gridon'            # 'ggplot2', 'seaborn', 'simple_white', 'plotly',
-        )
+        data = tesla.get_current_ratio()
+        df = pd.DataFrame.from_dict(data).sort_index(ascending=False)
+        fig = get_scatter_plot(df, 'date', 'RatioTotalCurrentAssets/TotalCurrentLiabilities', 'Current Ratio', 'Quarter', '<b>Tesla · Current Ratio<b>', 'CR')
+
     elif input == 'Quick Ratio':
-        fig = px.line(
-                data_frame=df,
-                x="year",
-                y="convicts",
-                labels={"convicts":"Convicts in Maharashtra",
-                        "gender":"Gender"},           # map the labels of the figure
-                height=400,
-                title='Indian Prison Statistics', # figure title
-                template='gridon'            # 'ggplot2', 'seaborn', 'simple_white', 'plotly',
-        )
+        data = tesla.get_quick_ratio()
+        df = pd.DataFrame.from_dict(data).sort_index(ascending=False)
+        fig = get_scatter_plot(df, 'date', 'QuickRatio', 'Quick Ratio', 'Quarter', '<b>Tesla · Quick Ratio<b>', 'QR')
+
     elif input == 'Debt to Equity Ratio':
         fig = ''
+
     elif input == 'Debt to Assets Ratio':
         fig = ''
     else:
-        fig = ''
+        data = tesla.get_equity_ratio()
+        df = pd.DataFrame.from_dict(data).sort_index(ascending=False)
+        fig = get_scatter_plot(df, 'date', 'RatioTotalStockholdersEquity/TotalAssets', 'Equity Ratio', 'Quarter', '<b>Tesla · Equity Ratio<b>', 'ER')
+
     return fig
 
 @callback(
@@ -583,49 +878,68 @@ def update_footer(input):
     Input('growth-metric', 'value')]
 )
 def update_growth_chart(input_1, input_2):
-    # 'Revenue Growth', 'Gross Profit Growth', 'Income from Operations Growth', 'Net Income Growth', 'Adj EBITDA Growth', 'EPS Growth', 'FcF Growth'
-    df = pd.read_csv("docs/Caste.csv")
-    df = df[df['state_name']=='Maharashtra']
-    df = df.groupby(['year','gender',], as_index=False)[['detenues','under_trial','convicts','others']].sum()
 
-    if input_1 == 'QoQ' and input_2 == 'Revenue':
-        fig = px.line(
-                data_frame=df,
-                x="year",
-                y="convicts",
-                labels={"convicts":"Convicts in Maharashtra",
-                        "gender":"Gender"},           # map the labels of the figure
-                title='Indian Prison Statistics', # figure title
-                template='gridon'            # 'ggplot2', 'seaborn', 'simple_white', 'plotly',
-        )
-    elif input_1 == 'QoQ' and input_2 == 'Revenue Growth':
-        fig = ''
+    # 'Revenue Growth', 'Gross Profit Growth', 'Income from Operations Growth', 'Net Income Growth', 'Adj EBITDA Growth', 'EPS Growth', 'FcF Growth'
+    if input_1 == 'QoQ' and input_2 == 'Revenue Growth':
+        data = tesla.get_revenue_growth(timescale= 'QoQ')
+        df = pd.DataFrame.from_dict(data).sort_index(ascending=False)
+        fig = get_scatter_plot(df, 'date', 'GrowthRatio', 'Revenue Growth (%)', 'Quarter', '<b>Tesla · QoQ Revenue Growth<b>', '%RG')
+        
     elif input_1 == 'QoQ' and input_2 == 'Gross Profit Growth':
-        fig = ''
+        data = tesla.get_gross_profit_growth(timescale= 'QoQ')
+        df = pd.DataFrame.from_dict(data).sort_index(ascending=False)
+        fig = get_scatter_plot(df, 'date', 'GrowthRatio', 'Gross Profit Growth (%)', 'Quarter', '<b>Tesla · QoQ Gross Profit Growth<b>', '%GPG')
+        
     elif input_1 == 'QoQ' and input_2 == 'Income from Operations Growth':
-        fig = ''
+        data = tesla.get_income_ops_growth(timescale= 'QoQ')
+        df = pd.DataFrame.from_dict(data).sort_index(ascending=False)
+        fig = get_scatter_plot(df, 'date', 'GrowthRatio', 'Income Ops Growth (%)', 'Quarter', '<b>Tesla · QoQ Income Operations Growth<b>', '%IOG')
+        
     elif input_1 == 'QoQ' and input_2 == 'Net Income Growth':
-        fig = ''
+        data = tesla.get_net_income_growth(timescale= 'QoQ')
+        df = pd.DataFrame.from_dict(data).sort_index(ascending=False)
+        fig = get_scatter_plot(df, 'date', 'GrowthRatio', 'Net Income Growth', 'Quarter', '<b>Tesla · QoQ Net Income Growth<b>', '%NIG')
+        
     elif input_1 == 'QoQ' and input_2 == 'Adj EBITDA Growth':
-        fig = ''
-    elif input_1 == 'QoQ' and input_2 == 'EPS Growth':
-        fig = ''
+        data = tesla.get_adj_ebitda_growth(timescale= 'QoQ')
+        df = pd.DataFrame.from_dict(data).sort_index(ascending=False)
+        fig = get_scatter_plot(df, 'date', 'GrowthRatio', 'Adj EBITDA Growth', 'Quarter', '<b>Tesla · QoQ Adjusted EBITDA Growth<b>', '%AEG')
+        
     elif input_1 == 'QoQ' and input_2 == 'FcF Growth':
-        fig = ''
+        data = tesla.get_fcf_growth(timescale= 'QoQ')
+        df = pd.DataFrame.from_dict(data).sort_index(ascending=False)
+        fig = get_scatter_plot(df, 'date', 'GrowthRatio', 'FCF Growth', 'Quarter', '<b>Tesla · QoQ FCF Growth<b>', '%FCFG')
+        
     elif input_1 == 'YoY' and input_2 == 'Revenue Growth':
-        fig = ''
+        data = tesla.get_revenue_growth(timescale= 'YoY')
+        df = pd.DataFrame.from_dict(data).sort_index(ascending=False)
+        fig = get_scatter_plot(df, 'Year', 'GrowthRatio', 'Revenue Growth', 'Quarter', '<b>Tesla · YoY Revenue Growth<b>', '%RG')
+        
     elif input_1 == 'YoY' and input_2 == 'Gross Profit Growth':
-        fig = ''
+        data = tesla.get_gross_profit_growth(timescale= 'YoY')
+        df = pd.DataFrame.from_dict(data).sort_index(ascending=False)
+        fig = get_scatter_plot(df, 'Year', 'GrowthRatio', 'Gross Profit Growth (%)', 'Quarter', '<b>Tesla · YoY Gross Profit Growth<b>', '%GPG')
+        
     elif input_1 == 'YoY' and input_2 == 'Income from Operations Growth':
-        fig = ''
+        data = tesla.get_income_ops_growth(timescale= 'YoY')
+        df = pd.DataFrame.from_dict(data).sort_index(ascending=False)
+        fig = get_scatter_plot(df, 'Year', 'GrowthRatio', 'Income Ops Growth (%)', 'Quarter', '<b>Tesla · YoY Income Operations Growth<b>', '%IOG')
+        
     elif input_1 == 'YoY' and input_2 == 'Net Income Growth':
-        fig = ''
+        data = tesla.get_net_income_growth(timescale= 'YoY')
+        df = pd.DataFrame.from_dict(data).sort_index(ascending=False)
+        fig = get_scatter_plot(df, 'Year', 'GrowthRatio', 'Net Income Growth', 'Quarter', '<b>Tesla · YoY Net Income Growth<b>', '%NIG')
+        
     elif input_1 == 'YoY' and input_2 == 'Adj EBITDA Growth':
-        fig = ''
-    elif input_1 == 'YoY' and input_2 == 'EPS Growth':
-        fig = ''
+        data = tesla.get_adj_ebitda_growth(timescale= 'YoY')
+        df = pd.DataFrame.from_dict(data).sort_index(ascending=False)
+        fig = get_scatter_plot(df, 'Year', 'GrowthRatio', 'Adj EBITDA Growth', 'Quarter', '<b>Tesla · YoY Adjusted EBITDA Growth<b>', '%AEG')
+        
     else:
-        fig = ''
+        data = tesla.get_fcf_growth(timescale= 'YoY')
+        df = pd.DataFrame.from_dict(data).sort_index(ascending=False)
+        fig = get_scatter_plot(df, 'Year', 'GrowthRatio', 'FCF Growth', 'Quarter', '<b>Tesla · YoY FCF Growth<b>', '%FCFG')
+        
     return fig
 
 
@@ -638,40 +952,69 @@ def update_growth_chart(input_1, input_2):
     Input('perf-metric', 'value')]
 )
 def update_perf_graph(input_1, input_2):
-    if input_1 == 'YoY' and input_2 == 'Invested Capital':
-        fig = px.line(
-                data_frame=df,
-                x="year",
-                y="convicts",
-                labels={"convicts":"Convicts in Maharashtra",
-                        "gender":"Gender"},           # map the labels of the figure
-                title='Indian Prison Statistics', # figure title
-                template='gridon'            # 'ggplot2', 'seaborn', 'simple_white', 'plotly',
-        )
-    elif input_1 == 'YoY' and input_2 == 'Total Assets':
+    if input_1 == 'QoQ' and input_2 == 'Invested Capital':
+        data = tesla.get_invested_capital(timescale= 'QoQ')
+        df = pd.DataFrame.from_dict(data).sort_index(ascending=False)
+        fig = get_bar_plot(df, 'date', 'InvestedCapital', 'Invested Capital (m$)', 'Quarter', '<b>Tesla · Invested Capital<b>')
+        
+    elif input_1 == 'QoQ' and input_2 == 'Total Assets':
+        data = tesla.get_total_assets(timescale= 'QoQ')
+        df = pd.DataFrame.from_dict(data).sort_index(ascending=False)
+        fig = get_bar_plot(df, 'date', 'TotalAssets', 'Total Assets (m$)', 'Quarter', '<b>Tesla · Total Assets<b>')
+        
+    elif input_1 == 'QoQ' and input_2 == 'ROE':
+        data = tesla.get_return_on_equity(timescale= 'QoQ')
+        df = pd.DataFrame.from_dict(data).sort_index(ascending=False)
+        fig = get_bar_plot(df, 'date', 'RatioNetIncome/TotalStockholdersEquity', 'ROE (%)', 'Quarter', '<b>Tesla · ROE<b>')
+        
+    elif input_1 == 'QoQ' and input_2 == 'ROA':
+        data = tesla.get_return_on_assets(timescale= 'QoQ')
+        df = pd.DataFrame.from_dict(data).sort_index(ascending=False)
+        fig = get_bar_plot(df, 'date', 'RatioNetIncome/TotalAssets', 'ROA (%)', 'Quarter', '<b>Tesla · ROA<b>')
+        
+    elif input_1 == 'QoQ' and input_2 == 'Operating ROIC':
+        data = tesla.get_nopat_roic(timescale= 'QoQ')
+        df = pd.DataFrame.from_dict(data).sort_index(ascending=False)
+        fig = get_bar_plot(df, 'date', 'RatioNOPAT/InvestedCapital', 'NOPAT ROIC (%)', 'Quarter', '<b>Tesla · Quarter NOPAT ROIC<b>')
+        
+    elif input_1 == 'QoQ' and input_2 == 'FcF ROIC':
+        data = tesla.get_fcf_roic(timescale= 'QoQ')
+        df = pd.DataFrame.from_dict(data).sort_index(ascending=False)
+        fig = get_bar_plot(df, 'date', 'RatioFcF/InvestedCapital', 'FcF ROIC (%)', 'Quarter', '<b>Tesla · Quarter FcF ROIC<b>')
+        
+    elif input_1 == 'QoQ' and input_2 == 'WACC':
         fig = ''
-    elif input_1 == 'YoY' and input_2 == 'ROE':
-        fig = ''
-    elif input_1 == 'YoY' and input_2 == 'ROA':
-        fig = ''
-    elif input_1 == 'YoY' and input_2 == 'Operating ROIC':
-        fig = ''
-    elif input_1 == 'YoY' and input_2 == 'FcF ROIC':
-        fig = ''
-    elif input_1 == 'YoY' and input_2 == 'WACC':
-        fig = ''
+        
     elif input_1 == 'TTM' and input_2 == 'Invested Capital':
-        fig = ''
+        data = tesla.get_invested_capital(timescale= 'TTM')
+        df = pd.DataFrame.from_dict(data).sort_index(ascending=False)
+        fig = get_bar_plot(df, 'date', 'InvestedCapital', 'TTM Invested Capital (m$)', 'Quarter', '<b>Tesla · TTM Invested Capital<b>')
+        
     elif input_1 == 'TTM' and input_2 == 'Total Assets':
-        fig = ''
+        data = tesla.get_total_assets(timescale= 'TTM')
+        df = pd.DataFrame.from_dict(data).sort_index(ascending=False)
+        fig = get_bar_plot(df, 'date', 'TTMTotalAssets', 'TTM Total Assets (m$)', 'Quarter', '<b>Tesla · TTM Total Assets<b>')
+        
     elif input_1 == 'TTM' and input_2 == 'ROE':
-        fig = ''
+        data = tesla.get_return_on_equity(timescale= 'TTM')
+        df = pd.DataFrame.from_dict(data).sort_index(ascending=False)
+        fig = get_bar_plot(df, 'date', 'RatioTTMNetIncome/TTMTotalStockholdersEquity', 'TTM ROE (%)', 'Quarter', '<b>Tesla · TTM ROE<b>')
+        
     elif input_1 == 'TTM' and input_2 == 'ROA':
-        fig = ''
+        data = tesla.get_return_on_assets(timescale= 'TTM')
+        df = pd.DataFrame.from_dict(data).sort_index(ascending=False)
+        fig = get_bar_plot(df, 'date', 'RatioTTMNetIncome/TTMTotalAssets', 'TTM ROA (%)', 'Quarter', '<b>Tesla · TTM ROA<b>')
+        
     elif input_1 == 'TTM' and input_2 == 'Operating ROIC':
-        fig = ''
+        data = tesla.get_nopat_roic(timescale= 'TTM')
+        df = pd.DataFrame.from_dict(data).sort_index(ascending=False)
+        fig = get_bar_plot(df, 'date', 'RatioNOPAT/InvestedCapital', 'TTM NOPAT ROIC (%)', 'Quarter', '<b>Tesla · TTM NOPAT ROIC<b>')
+        
     elif input_1 == 'TTM' and input_2 == 'FcF ROIC':
-        fig = ''
+        data = tesla.get_fcf_roic(timescale= 'TTM')
+        df = pd.DataFrame.from_dict(data).sort_index(ascending=False)
+        fig = get_bar_plot(df, 'date', 'RatioFcF/InvestedCapital', 'TTM FcF ROIC (%)', 'Quarter', '<b>Tesla · TTM FcF ROIC<b>')
+        
     else:
         fig = ''
     return fig
@@ -737,9 +1080,15 @@ def update_footer_perf(input):
 )
 def update_forecast_upper_graph(input):
     if input == '4 qtr rate FcF ROIC':
-        fig = ''
+        data = tesla._get_rate_fcf_roic(timescale= 'QoQ')
+        df = pd.DataFrame.from_dict(data).sort_index(ascending=False)
+        fig = get_scatter_plot(df, 'date', 'RateTTM', 'TTM Rate (%)', 'Quarter', '<b>Tesla · TTM Rate of change of FcF ROIC<b>', '%TTMRateFcF')
+        
     else:
-        fig = ''
+        data = tesla._get_rate_invested_capital(timescale= 'QoQ')
+        df = pd.DataFrame.from_dict(data).sort_index(ascending=False)
+        fig = get_scatter_plot(df, 'date', 'RateTTM', 'TTM Rate (%)', 'Quarter', '<b>Tesla · TTM Rate of change of Invested Capital<b>', '%TTMRateFcF')
+        
     return fig
 
 @callback(
@@ -748,7 +1097,10 @@ def update_forecast_upper_graph(input):
 )
 def update_forecast_bottom_graph(input):
     if input == 'QoQ':
-        fig = ''
+        data = tesla.projected_fcf(timescale= 'QoQ')
+        df = pd.DataFrame.from_dict(data).sort_index(ascending=True)
+        fig = get_bar_plot(df, 'Quarter', 'FcFProjected', 'FCF (m$)', 'Quarter', '<b>Tesla · Projected Quarterly FcF (Non Adj.)<b>')
+
     else:
         fig = ''
     return fig

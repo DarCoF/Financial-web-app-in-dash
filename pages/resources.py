@@ -46,7 +46,7 @@ resources_layout = dbc.Card([
     get_item_component(['Tesla:', 'Square:', 'Block Inc:', 'Unity Software Inc:', 'Roblox Corp:'], {'Tesla investor relations site': 'https://ir.tesla.com/#quarterly-disclosure', 'Square website': 'https://squareinc2020ir.q4web.com/overview/default.aspx', 'Block Inc website': 'https://investors.block.xyz/overview/default.aspx', 'Unity website': 'https://investors.unity.com/overview/default.aspx', 'Roblox website': 'https://ir.roblox.com/overview/default.aspx'}),
     get_title_component('Tesla community', 'fa fa-car'),
     get_item_component(['Rob Mauer:', 'TheLimitingFactor:', 'Now You Know:', 'Stephen M. Ryan:', 'Troy Teslike:', 'James Stephenson:', 'TESLARATI:'], {'Tesla Daily YouTube channel': 'https://www.youtube.com/@TeslaDaily', 'The Limiting Factor YouTube channel': 'https://www.youtube.com/@thelimitingfactor', 'Now You Know YouTube channel': 'https://www.youtube.com/@NowYouKnowChannel', 'Solving The Money Problem YouTube channel': 'https://www.youtube.com/@SolvingTheMoneyProblem', 'Troy Teslike twitter account': 'https://twitter.com/TroyTeslike', 'James Stephenson twitter account': 'https://twitter.com/ICannot_Enough', 'TESLARATI website': 'https://www.teslarati.com/?utm_campaign=gs-2020-11-23&utm_source=google&utm_medium=smart_campaign&gclid=Cj0KCQiA1ZGcBhCoARIsAGQ0kkpgB15_I5paGQ4T15cbjrAJ5d4SIEUANl9Wgw2Viv4h6i_koiPlYx4aAnjnEALw_wcB'}),
-], class_name= "card", style={'width': 'auto', 'height': 'auto', 'text-align': 'left'})
+], class_name= "card body-content", style={'width': 'auto', 'height': 'auto', 'text-align': 'left'})
 
 layout = dbc.Container(
     [

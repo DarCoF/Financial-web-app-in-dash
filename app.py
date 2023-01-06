@@ -38,7 +38,7 @@ navbar = dbc.NavbarSimple(
     brand_href="#",
     color="navbar",
     dark=True,
-    class_name='navbar rounded',
+    class_name='navbar rounded border-bottom border-dark',
 )
 
 # =============================================================================
@@ -49,14 +49,15 @@ sidebar = sidebar = html.Div(
         html.Div([
                 # width: 3rem ensures the logo is the exact width of the
                 # collapsed sidebar (accounting for padding)
-                html.Img(src="assets\EggLogo_white_transparency.png", style={"width": "3rem"}),
-                html.H2("TMTS", className="display-4"),
+                html.Img(src="assets\\logo.png", style={"width": "4.15rem"}, className= 'centered'),
+                html.H2("", className="display-8"),
             ], 
             className= 'sidebar-header',
         ),
         html.Hr(),
         html.Div([
-                html.P("Company Financials", className="lead"),
+                html.I(className="fa fa-line-chart ms-3 mt-1"),
+                html.P("Financials", className="lead mt-1"),
             ],
             className='sidebar-header',
         ), 
@@ -64,14 +65,14 @@ sidebar = sidebar = html.Div(
         [
             dbc.NavLink(
                     [
-                        html.I(className="fas fa-home me-2"), html.Span(dash.page_registry['pages.tesla']['name']),
+                        html.I(className="fa fa-car me-2"), html.Span(dash.page_registry['pages.tesla']['name'])
                     ],
                     href="/",
                     active="exact",
                 ),
             dbc.NavLink(
                     [
-                        html.I(className="fas fa-home me-2"), html.Span(dash.page_registry['pages.base_company']['name']),
+                        html.I(className="fa fa-building me-2"), html.Span(dash.page_registry['pages.base_company']['name']),
                     ],
                     href="/test_two",
                     active="exact",
@@ -81,7 +82,8 @@ sidebar = sidebar = html.Div(
             pills=True,
         ),
         html.Div([
-                html.P("Gallery", className="lead"),
+                html.I(className="fa fa-camera ms-3 mt-3"),
+                html.P("Gallery", className="lead mt-3"),
             ],
             className='sidebar-header',
         ),            
@@ -89,14 +91,14 @@ sidebar = sidebar = html.Div(
         [
             dbc.NavLink(
                     [
-                        html.I(className="fas fa-home me-2"), html.Span(dash.page_registry['pages.collectibles']['name']),
+                        html.I(className="fa fa-gift me-2"), html.Span(dash.page_registry['pages.collectibles']['name']),
                     ],
                     href="/collectibles",
                     active="exact",
                 ),
             dbc.NavLink(
                     [
-                        html.I(className="fas fa-home me-2"), html.Span(dash.page_registry['pages.resources']['name']),
+                        html.I(className="fa fa-book me-2"), html.Span(dash.page_registry['pages.resources']['name']),
                     ],
                     href="/resources",
                     active="exact",
@@ -106,8 +108,8 @@ sidebar = sidebar = html.Div(
             pills=True
         ),
         html.Div([
-                html.I(className="fas fa-home me-2 lead"),
-                html.P("About Us", className="lead"),
+                html.I(className="fa fa-users ms-3 mt-3"),
+                html.P("About Me", className="lead mt-3"),
             ],
             className='sidebar-header',
         ), 
@@ -115,14 +117,14 @@ sidebar = sidebar = html.Div(
         [
             dbc.NavLink(
                     [
-                        html.I(className="fas fa-home me-2"), html.Span(dash.page_registry['pages.mission']['name']),
+                        html.I(className="fa fa-bullseye me-2"), html.Span(dash.page_registry['pages.mission']['name']),
                     ],
                     href="/mission",
                     active="exact",
                 ),
             dbc.NavLink(
                     [
-                        html.I(className="fas fa-home me-2"), html.Span(dash.page_registry['pages.contact']['name']),
+                        html.I(className="fa fa-commenting me-2"), html.Span(dash.page_registry['pages.contact']['name']),
                     ],
                     href="/contact",
                     active="exact",
@@ -132,7 +134,7 @@ sidebar = sidebar = html.Div(
             pills=True
         ),        
     ],
-    className="sidebar",
+    className="sidebar border-end border-dark",
 )
 
 # =============================================================================
@@ -140,37 +142,30 @@ sidebar = sidebar = html.Div(
 # =============================================================================
 body = dbc.Row(
     [
-        dbc.Col(id="page-content", children=[dash.page_container], width=12, className='my-5 p-4')
+        dbc.Col(id="page-content", children=[dash.page_container], width=12, className='content')
     ]
 )
 
 # =============================================================================
 # Footer
 # =============================================================================
-footer_icon_twitter = dbc.NavLink([html.I(className="fa-brands fa-twitter")], class_name='footer', href='https://twitter.com/tmts_media', active='exact')
-footer_icon_instragram = dbc.NavLink([html.I(className="fa-brands fa-instagram")], class_name='footer', style={'margin-left': '75px'}, href='https://www.instagram.com/tmtsmedia/?hl=es', active='exact')
+footer_icon_twitter = dbc.NavLink([html.I(className="fa-brands fa-twitter")], class_name='align-middle', href='https://twitter.com/tmts_media', active='exact')
+footer_icon_instragram = dbc.NavLink([html.I(className="fa-brands fa-instagram")], class_name='align-middle', href='https://www.instagram.com/tmtsmedia/?hl=es', active='exact')
 footer_left = html.Div(
     [
         footer_icon_twitter,
         footer_icon_instragram
     ], className='hstack')
-footer_right = html.P("TMTS media, 2022")
+footer_name = html.P(id='footer', children='The Rabbit Hole 2022', className='mt-2', style={'padding-left': '25px', 'padding-top': '5px'})
 
-
-footer = html.Div(
-        [
-            dbc.Row(
-            [
-            dbc.Col(html.Div(''), width={"size": 2, "order": 1}, className='footer'),
-            dbc.Col([footer_left], width={"size": 5, "order": 2, 'offset': 2}, className= 'footer'),
-            dbc.Col([footer_right], width={"size": 5, "order": 3}, className= 'footer', style={'margin-left': '1500px'}),
-            ],
-            className="g-0 position-static"
-            ),
+footer = html.Footer(children = html.Div(
+    children=[
+        footer_icon_twitter,
+        footer_icon_instragram,
+        footer_name
         ],
-        className='rounded'
-)
-
+    className='hstack position-absolute top-50 start-50 translate-middle',
+), className='footer border-top border-dark')
 
 # =============================================================================
 # Layout 
@@ -178,9 +173,7 @@ footer = html.Div(
 app.layout = html.Div(
     [
         dbc.Row(
-            [sidebar, navbar, html.Div(dash.page_container, className= 'mt-5 p-5 centered'), footer], align='center')
-    ], className='overlay-two'
-)
+            [sidebar, html.Div(dash.page_container, className= 'mt-5 p-5 centered content'), footer, navbar], align='center')], className='overlay-two')
 
 # =============================================================================
 # Main 

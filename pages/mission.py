@@ -27,13 +27,12 @@ def get_card(img_url, title, content):
     ], className='card')
     return card
 
-layout = html.Div(
+layout = dbc.Container(
     [
         dbc.Row([
-            dbc.Col([get_card('', 'Tipo Mofa', 'Su biografía')],  width= 6, class_name= 'mb-2'),
-            dbc.Col([get_card('', 'Tipo Serio', 'Su biografía')],  width= 6),
-            dbc.Col([get_card('', 'Nuestra pequeña historia', 'Aquí va el contenido')], width= 6),
-            dbc.Col([get_card('', '¿Qué es "El Oráculo"?', 'Aquí va el contenido')],  width= 6)
-        ])
-    ], className= 'center-screen'
+            dbc.Col([get_card('', 'Sobre mi', 'Su biografía')],  width= 8, class_name= 'mb-2'),
+            dbc.Col([get_card('', 'Mi pequeña historia', 'Aquí va el contenido')], width= 8, className='mb-2'),
+            dbc.Col([get_card('', '¿Qué es esta web-app?', 'Aquí va el contenido')],  width= 8, className='mb-2')
+        ])       
+    ], className= 'center-screen ', style={'width': 'auto'}
 )
